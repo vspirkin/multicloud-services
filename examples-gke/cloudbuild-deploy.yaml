@@ -1,0 +1,38 @@
+steps:
+- id: 'Deploy Genesys services in GKE'
+  name: 'gcr.io/gts-multicloud-pe-dev/privateedition'
+  entrypoint: 'bash'
+  timeout: '3600s'
+  env:
+    - 'VDOMAIN=${_VDOMAIN}'
+    - 'VGCPPROJECT=${_VGCPPROJECT}'
+    - 'VGCPREGION=${_VGCPREGION}'
+    - 'VGKECLUSTER=${_VGKECLUSTER}'
+    - 'VHELMCOMMAND=${_VHELMCOMMAND}'
+    - 'VIMAGEREGISTRY=${_VIMAGEREGISTRY}'
+    - 'VARTIFACTREPO=${_VARTIFACTREPO}'
+  args:
+    - |-
+      echo "*** START"
+      pwd
+      echo "** Environment variables:"
+      env
+      echo
+      echo "** Tools:"
+      kubectl version
+      helm version
+      echo
+      echo "** K8s context:"
+      kubectl config get-contexts
+      echo
+      echo "** K8s config:"
+      cat ~/.kube/config || true
+      echo
+      echo "** K8s cluster:"
+      kubectl get node
+      kubectl top node
+      kubectl get ns
+      helm ls -n voice
+  
+
+timeout: '3600s'
