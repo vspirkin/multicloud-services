@@ -67,6 +67,11 @@ steps:
 
     cd examples-gke/github-actions/$SERVICE
 
+    echo "rrrrrr  - $(pwd)"
+    echo "rrrrrr  - $NS, $SERVICE, $DOMAIN, $IMAGE_REGISTRY, $COMMAND, $FULLCOMMAND, $IMAGE_REGISTRY"
+    helm repo list
+    ls -la ../
+
     source ../deployment.sh
 
 
