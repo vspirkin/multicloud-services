@@ -1,4 +1,5 @@
 steps:
+
 - id: 'Deploy Genesys services in GKE'
   name: 'gcr.io/gcpe0003/privateedition'
   timeout: '3600s'
@@ -15,12 +16,6 @@ steps:
     - 'NS=${_VNAMESPACE}'
 
   secretEnv: [ 'JFROGPASS','JFROGUSR' ]
-  availableSecrets:
-  secretManager:
-    - versionName: "projects/402866575973/secrets/JFROGUSR/versions/1"
-      env: "JFROGUSR"
-    - versionName: "projects/402866575973/secrets/JFROGPASS/versions/1"
-      env: "JFROGPASS"
 
   script: |
     echo "*********************************************"
@@ -68,8 +63,14 @@ steps:
     source .github/scripts/deployment.sh
 
 
-  
-
 timeout: '3600s'
+
+availableSecrets:
+  secretManager:
+    - versionName: "projects/402866575973/secrets/JFROGUSR/versions/1"
+      env: "JFROGUSR"
+    - versionName: "projects/402866575973/secrets/JFROGPASS/versions/1"
+      env: "JFROGPASS"
+      
 options:
   logging: CLOUD_LOGGING_ONLY
