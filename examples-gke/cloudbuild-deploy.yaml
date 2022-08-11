@@ -1,3 +1,6 @@
+# This is Cloud Build configuration file
+# for automated deployment to your Google GKE cluster
+
 steps:
 
 - id: 'Deploy Genesys services in GKE'
@@ -54,10 +57,10 @@ steps:
     pwd
     ls -lart
 
-    export $NS
-    export $SERVICE
-    export $DOMAIN
-    export $IMAGE_REGISTRY
+    export NS
+    export SERVICE
+    export DOMAIN
+    export IMAGE_REGISTRY
     cd $SERVICE
 
     source .github/scripts/deployment.sh
@@ -71,6 +74,6 @@ availableSecrets:
       env: "JFROGUSR"
     - versionName: "projects/402866575973/secrets/JFROGPASS/versions/1"
       env: "JFROGPASS"
-      
+
 options:
   logging: CLOUD_LOGGING_ONLY
