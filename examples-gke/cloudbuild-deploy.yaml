@@ -12,6 +12,9 @@ steps:
     - 'VIMAGEREGISTRY=${_VIMAGEREGISTRY}'
     - 'VARTIFACTREPO=${_VARTIFACTREPO}'
   args:
+    - '-eEuo'
+    - 'pipefail'
+    - '-c'
     - |-
       echo "*** START"
       pwd
