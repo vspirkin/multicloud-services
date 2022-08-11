@@ -1,6 +1,6 @@
 steps:
 - id: 'Deploy Genesys services in GKE'
-  name: 'gcr.io/gts-multicloud-pe-dev/privateedition'
+  name: 'gcr.io/gcpe0003/privateedition'
   timeout: '3600s'
   env:
     - 'VDOMAIN=${_VDOMAIN}'
