@@ -7,43 +7,54 @@ steps:
     - 'VGCPREGION=${_VGCPREGION}'
     - 'VGKECLUSTER=${_VGKECLUSTER}'
 
-    - 'VDOMAIN=${_VDOMAIN}'
-    - 'VHELMCOMMAND=${_VHELMCOMMAND}'
-    - 'VIMAGEREGISTRY=${_VIMAGEREGISTRY}'
+    - 'DOMAIN=${_VDOMAIN}'
+    - 'FULLCOMMAND=${_VHELMCOMMAND}'
+    - 'IMAGE_REGISTRY=${_VIMAGEREGISTRY}'
     - 'VARTIFACTREPO=${_VARTIFACTREPO}'
-    
+    - 'SERVICE=${_VSERVICE}'
+    - 'NS=${_VNAMESPACE}'
+
+
   script: |
-    echo "*** START"
-    pwd
-    echo "** Environment variables:"
-    env
-    echo
-    echo "** Tools:"
-    kubectl version
-    helm version
-    echo
-    echo "**************************"
+    echo "*********************************************"
 
-    echo "** K8s login:"
-    export gkeCluster=$VGKECLUSTER
-    export gcpRegion=$VGCPREGION
-    export gcpProject=$VGCPPROJECT
-
+    echo "** K8s login"
     gcloud init --no-launch-browser
-    gcloud container clusters get-credentials $gkeCluster --region $gcpRegion --project $gcpProject
+    gcloud container clusters get-credentials $VGKECLUSTER --region $VGCPREGION --project $VGCPPROJECT
 
-    echo "**************************"
-    echo "** K8s context:"
-    kubectl config get-contexts
-    echo
-    echo "** K8s config:"
-    cat ~/.kube/config || true
-    echo
-    echo "** K8s cluster:"
-    kubectl get node
-    kubectl top node
-    kubectl get ns
-    helm ls -n voice
+    echo "*** Helm repo add:"
+    helm repo add --force-update helm_repo ${{ env.HELM_REGISTRY }}${{ github.event.inputs.helmrepo }} \
+          --username ${{ env.HELM_REGISTRY_USER }} --password ${{ env.HELM_REGISTRY_TOKEN }}
+
+    echo "*** Parse Command"
+    COMMAND=$(echo $FULLCOMMAND | cut -d' ' -f1)
+    if [[ "$FULLCOMMAND" == *" "* ]]; then
+      CHART_NAME=$(echo $FULLCOMMAND | tr -s ' ' | cut -d' ' -f2)
+      RL_NAME=$(echo $FULLCOMMAND | tr -s ' ' | cut -d' ' -f3)
+    fi
+
+    echo "*** Determine target namespace"
+    # By default (if namespace not defined) we install in namespace=service_name
+        if [ -z "$NS" ] ; then
+          NS=${{ github.event.inputs.service }}
+          [[ $SV == "tenant" ]] && NS="voice"  # Tenant is exception, we deploy it in voice namespace by default
+        fi
+    if ! kubectl get namespace $NS; then
+        echo "Namespace $NS does not exist. Creating it.."
+        kubectl create namespace $NS
+    else
+        echo "Namespace $NS already exists. Will use it."
+    fi
+    kubectl config set-context --current --namespace=$NS
+
+    echo "*********************************************"
+    echo "*** Service deployment"
+    pwd
+    ls -lart
+
+    source .github/scripts/deployment.sh
+
+
   
 
 timeout: '3600s'
