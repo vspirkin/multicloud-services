@@ -1,5 +1,10 @@
 # This is Cloud Build configuration file
 # for automated deployment to your Google GKE cluster
+#
+# See more about it: https://cloud.google.com/build/docs#docs
+#
+# Note: your Cloud Build service account (named like <PROJECT_NUMBER>@cloudbuild.gserviceaccount.com)
+#       should have roles "Kubernetes Engine Admin" and "Secret Manager Secret Accessor"
 
 steps:
 
@@ -54,16 +59,15 @@ steps:
 
     echo "*********************************************"
     echo "*** Service deployment"
-    pwd
-    ls -lart
 
     export NS
     export SERVICE
     export DOMAIN
     export IMAGE_REGISTRY
-    cd $SERVICE
 
-    source .github/scripts/deployment.sh
+    cd examples-gke/github-actions/$SERVICE
+
+    source ../deployment.sh
 
 
 timeout: '3600s'
