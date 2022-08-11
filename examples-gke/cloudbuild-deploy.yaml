@@ -10,10 +10,17 @@ steps:
     - 'DOMAIN=${_VDOMAIN}'
     - 'FULLCOMMAND=${_VHELMCOMMAND}'
     - 'IMAGE_REGISTRY=${_VIMAGEREGISTRY}'
-    - 'VARTIFACTREPO=${_VARTIFACTREPO}'
+    - 'ARTIFACTREPO=${_VARTIFACTREPO}'
     - 'SERVICE=${_VSERVICE}'
     - 'NS=${_VNAMESPACE}'
 
+  secretEnv: [ 'JFROGPASS','JFROGUSR' ]
+  availableSecrets:
+  secretManager:
+    - versionName: "projects/402866575973/secrets/JFROGUSR/versions/1"
+      env: "JFROGUSR"
+    - versionName: "projects/402866575973/secrets/JFROGPASS/versions/1"
+      env: "JFROGPASS"
 
   script: |
     echo "*********************************************"
@@ -23,22 +30,22 @@ steps:
     gcloud container clusters get-credentials $VGKECLUSTER --region $VGCPREGION --project $VGCPPROJECT
 
     echo "*** Helm repo add:"
-    helm repo add --force-update helm_repo ${{ env.HELM_REGISTRY }}${{ github.event.inputs.helmrepo }} \
-          --username ${{ env.HELM_REGISTRY_USER }} --password ${{ env.HELM_REGISTRY_TOKEN }}
+    helm repo add --force-update helm_repo https://pureengage.jfrog.io/artifactory/$ARTIFACTREPO \
+        --username $JFROGUSR --password $JFROGPASS
 
     echo "*** Parse Command"
     COMMAND=$(echo $FULLCOMMAND | cut -d' ' -f1)
     if [[ "$FULLCOMMAND" == *" "* ]]; then
-      CHART_NAME=$(echo $FULLCOMMAND | tr -s ' ' | cut -d' ' -f2)
-      RL_NAME=$(echo $FULLCOMMAND | tr -s ' ' | cut -d' ' -f3)
+        CHART_NAME=$(echo $FULLCOMMAND | tr -s ' ' | cut -d' ' -f2)
+        RL_NAME=$(echo $FULLCOMMAND | tr -s ' ' | cut -d' ' -f3)
     fi
 
     echo "*** Determine target namespace"
     # By default (if namespace not defined) we install in namespace=service_name
-        if [ -z "$NS" ] ; then
-          NS=${{ github.event.inputs.service }}
-          [[ $SV == "tenant" ]] && NS="voice"  # Tenant is exception, we deploy it in voice namespace by default
-        fi
+    if [ -z "$NS" ] ; then
+        NS=$SERVICE
+        [[ $SV == "tenant" ]] && NS="voice"  # Tenant is exception, we deploy it in voice namespace by default
+    fi
     if ! kubectl get namespace $NS; then
         echo "Namespace $NS does not exist. Creating it.."
         kubectl create namespace $NS
@@ -51,6 +58,12 @@ steps:
     echo "*** Service deployment"
     pwd
     ls -lart
+
+    export $NS
+    export $SERVICE
+    export $DOMAIN
+    export $IMAGE_REGISTRY
+    cd $SERVICE
 
     source .github/scripts/deployment.sh
 
