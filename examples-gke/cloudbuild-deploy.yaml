@@ -26,6 +26,7 @@ steps:
   secretEnv: [ 'JFROGPASS','JFROGUSR' ]
 
   script: |
+    #!/bin/bash
     echo "*********************************************"
 
     echo "** K8s login"
